@@ -1,0 +1,180 @@
+#include <ESP8266WiFi.h>
+#include <FirebaseArduino.h>
+#include <DNSServer.h>
+#include <ESP8266WebServer.h>
+#include <WiFiManager.h>
+#define FIREBASE_HOST "enter firebase host"
+#define FIREBASE_AUTH "enter firebase auth"
+#include "DHT.h"
+
+#define DHTPIN D2   
+#define DHTTYPE DHT11 
+const int trigPin = D6;
+const int echoPin = D5;
+
+  int nem;
+int sicaklik;
+int degerIsik;
+long duration;
+int distance;
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+
+ dht.begin();
+  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+pinMode(D7, OUTPUT);
+pinMode(D0, OUTPUT);
+Serial.begin(115200);
+WiFiManager wifiManager;
+Serial.println("Conecting.....");
+wifiManager.autoConnect("Ev Otomasyonu","");
+Serial.println("connected");
+
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+  
+}
+
+void loop() {
+
+
+
+
+
+String otomatik = Firebase.getString("otomatik");
+Serial.print("otomatik");Serial.println(otomatik);
+if(otomatik=="1")
+{
+  
+  if(degerIsik==1){
+    
+    digitalWrite(D0,LOW);
+    
+    
+    }
+   else if(degerIsik==0){
+    
+    digitalWrite(D0, HIGH);
+    
+    }
+  
+  
+  }
+
+  else if(otomatik=="0")
+
+  {
+    
+  
+    
+    }
+    
+}
+
+
+void ac_kapa(){
+  
+  
+  String lambStatus = Firebase.getString("lamb");
+Serial.print("lambStatus");Serial.println(lambStatus);
+if(lambStatus=="1")
+{
+  
+  digitalWrite(D7,HIGH);
+  
+  
+  }
+
+  else if(lambStatus=="0")
+
+  {
+    
+     digitalWrite(D7,LOW);
+    
+    }
+  
+  String lambStatus2 = Firebase.getString("lamb2");
+Serial.print("lambStatus");Serial.println(lambStatus);
+if(lambStatus2=="1")
+{
+  
+  digitalWrite(D8,HIGH);
+  
+  
+  }
+
+  else if(lambStatus2=="0")
+
+  {
+    
+     digitalWrite(D8,LOW);
+    
+    }
+  
+  String lambStatus3 = Firebase.getString("lamb3");
+Serial.print("lambStatus");Serial.println(lambStatus);
+if(lambStatus3=="1")
+{
+  
+  digitalWrite(D1,HIGH);
+  
+  
+  }
+
+  else if(lambStatus3=="0")
+
+  {
+    
+     digitalWrite(D1,LOW);
+    
+    }
+  
+  }
+
+  void sensorler(){
+    
+    
+    sicaklik= dht.readTemperature();
+Firebase.setInt("sicaklik",sicaklik);
+
+nem= dht.readHumidity();
+Firebase.setInt("nem",nem);
+
+digitalWrite(1,HIGH);
+
+float t = dht.readTemperature();
+Serial.print("Temperature: ");
+  Serial.print(t);
+  
+ digitalWrite(trigPin, LOW);
+delayMicroseconds(2);
+digitalWrite(trigPin, HIGH);
+delayMicroseconds(10);
+digitalWrite(trigPin, LOW);
+duration = pulseIn(echoPin, HIGH);
+distance= duration*0.034/2;
+Serial.print("Distance: ");
+Serial.println(distance);
+Firebase.setInt("distance",distance);
+
+
+if(digitalRead(D4)==LOW)
+  {
+    Serial.println("Bright");
+     degerIsik=1;
+   
+  }
+  else
+  {
+    Serial.println("Dark");
+      degerIsik=0;
+  }
+  Firebase.setInt("degerIsik",degerIsik);
+  delay(500);
+  
+    
+    
+    
+    
+    }
